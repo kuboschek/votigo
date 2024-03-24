@@ -4,7 +4,7 @@ from fastapi import HTTPException
 import jwt
 import requests_cache
 
-JWKS_URI = os.environ["JWKS_URL"]
+JWKS_URI = os.getenv("JWKS_URL", "")
 ALGORITHMS = ["RS256"]
 
 session = requests_cache.CachedSession('jwks-cache', cache_control=True)

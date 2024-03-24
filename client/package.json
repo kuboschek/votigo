@@ -1,0 +1,14 @@
+{
+  "name": "votigo-client",
+  "version": "0.0.1",
+  "description": "Client for votigo app",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "openapi-typescript-codegen": "^0.28.0"
+  },
+  "scripts": {
+    "codegen": "openapi --input ../openapi.yaml --output ./api"
+  }
+}

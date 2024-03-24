@@ -1,0 +1,32 @@
+# Ignore node_modules directory
+node_modules/
+
+# Ignore built output
+dist/
+
+# Ignore environment-specific files
+.env
+.env.local
+.env.*.local
+
+# Ignore log files
+*.log
+
+# Ignore editor-specific files
+.vscode/
+.idea/
+
+# Ignore build artifacts
+*.bak
+*.swp
+*.tmp
+
+# Ignore TypeScript build output
+*.js
+*.js.map
+
+# Ignore Vue build output
+/dist/
+
+# Ignore generated OpenAPI client
+/api/
