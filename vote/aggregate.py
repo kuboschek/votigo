@@ -16,6 +16,9 @@ class InvalidStateTransition(Exception):
 
 @dataclass
 class Vote(Aggregate):
+    # These three are auto-created by the Aggregate class.
+    # They are included here so they are serialized in FastAPI.
+    
     _id: UUID = field(init=False)
     _created_on: datetime.datetime = field(init=False)
     _modified_on: datetime.datetime = field(init=False)

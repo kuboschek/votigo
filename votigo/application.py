@@ -14,14 +14,14 @@ class Votigo(Application):
 
         return vote
     
-    def add_option(self, vote_id: UUID, values: UpdateOption):
+    def add_option(self, vote_id: UUID, values: UpdateOption) -> Option:
         vote: Vote = self.repository.get(vote_id)
         if not vote.editable:
             raise ValueError("Can't add option to a vote that's already started")
 
         option = Option()
         option.set_title(values.title)
-        option.update_ordering(values.ordering)
+        option.set_ordering(values.ordering)
 
         vote.add_option(option.id)
         self.save(vote, option)
@@ -37,7 +37,7 @@ class Votigo(Application):
             option.set_title(values.title)
 
         if values.ordering != option.ordering:
-            option.update_ordering(values.ordering)
+            option.set_ordering(values.ordering)
 
         self.save(option)
 
@@ -81,19 +81,20 @@ class Votigo(Application):
     def lock_vote(self, vote_id: UUID):
         vote: Vote = self.repository.get(vote_id)
         vote.lock_settings()
-        self.save(vote)
-
-    def start_vote(self, vote_id: UUID):
-        vote: Vote = self.repository.get(vote_id)
         options: list[Option] = [self.repository.get(option_id) for option_id in vote.option_ids]
 
         for option in options:
             if option.count > 0:
                 raise ValueError("Can't start vote with options that already have votes")
             option.lock_editing()
+
+        self.save(*options, vote)
+
+    def start_vote(self, vote_id: UUID):
+        vote: Vote = self.repository.get(vote_id)
             
         vote.start()
-        self.save(*options, vote)
+        self.save(vote)
     
     def stop_vote(self, vote_id: UUID):
         vote: Vote = self.repository.get(vote_id)

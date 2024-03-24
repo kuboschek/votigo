@@ -16,8 +16,10 @@ class TestVoteAggregate(unittest.TestCase):
 
     def test_choose_filter(self):
         filter_id = uuid.uuid4()
-        self.vote.choose_filter(filter_id)
+        filter_version = 12
+        self.vote.choose_filter(filter_id, filter_version)
         self.assertEqual(self.vote.filter_id, filter_id)
+        self.assertEqual(self.vote.filter_version, filter_version)
 
     def test_lock_settings(self):
         # Votes are editable

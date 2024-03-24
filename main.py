@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import Depends, FastAPI
 
-from auth.middleware import CurrentUser, FakeUser
+from auth.middleware import CurrentUser, FakeUser, User as UserModel
 from vote.aggregate import Vote
 from votigo.application import Votigo
 from votigo.data_models import ReadFullVote, UpdateOption
@@ -11,11 +11,11 @@ from votigo.data_models import ReadFullVote, UpdateOption
 tags_metadata = [
     {
         "name": "votes",
-        "description": "Operations regarding votes",
+        "description": "Votes represent an individual choice users can make.",
     },
     {
         "name": "options",
-        "description": "Operations regarding options",
+        "description": "Options represent the individual choices within a vote.",
     },
 ]
 
@@ -54,6 +54,9 @@ def close_vote(vote_id: UUID, user: User):
 
 @app.post("/vote/{vote_id}/vote", tags=["votes"])
 def vote(vote_id: UUID, user: User, option_id: UUID):
+    """
+        Register a vote for a user on a vote.
+    """
     return votigo.vote(vote_id, user.id, option_id)
 
 
