@@ -52,7 +52,7 @@ class TestVoteAggregate(unittest.TestCase):
     def test_add_voter(self):
         voter_id = uuid.uuid4()
         self.vote.add_voter(voter_id)
-        self.assertIn(voter_id, self.vote.voters)
+        self.assertIn(voter_id, self.vote.voter_ids)
 
     def test_invalid_state_transition(self):
         with self.assertRaises(InvalidStateTransition):

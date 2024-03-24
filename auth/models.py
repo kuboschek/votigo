@@ -8,3 +8,7 @@ class User(BaseModel):
     name: Optional[str]
     email: Optional[str]
     picture: Optional[str]
+
+    @property
+    def id(self):
+        return self.sub

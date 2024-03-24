@@ -17,7 +17,8 @@
                 "main:app",
                 "--reload"
             ],
-            "jinja": true
+            "jinja": true,
+            "justMyCode": false
         }
     ]
 }

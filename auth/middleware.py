@@ -1,6 +1,6 @@
 from typing import Annotated, Any, Optional
 from fastapi import Depends, HTTPException
-from fastapi.security import HTTPBasic, HTTPBearer, OAuth2PasswordBearer
+from fastapi.security import HTTPBasic, HTTPBasicCredentials, HTTPBearer, OAuth2PasswordBearer
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -31,12 +31,12 @@ CurrentUser = Annotated[User, Depends(_get_current_user)]
 
 _fake_auth = HTTPBasic()
 
-def _get_fake_user(fake_auth = Depends(_fake_auth)) -> User:
+def _get_fake_user(fake_auth: HTTPBasicCredentials = Depends(_fake_auth)) -> User:
      return User(
-            sub=fake_auth.user or "fake_user",
+            sub=fake_auth.username or "fake_user",
             iss="https://example.com",
-            email=f"{fake_auth.user or 'fake_user'}@example.com",
-            name=fake_auth.user or "Fake User",
+            email=f"{fake_auth.username or 'fake_user'}@example.com",
+            name=fake_auth.username or "Fake User",
             picture="https://example.com/fake_user.jpg",
      )
 
