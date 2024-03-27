@@ -7,7 +7,7 @@ import requests_cache
 JWKS_URI = os.getenv("JWKS_URL", "")
 ALGORITHMS = ["RS256"]
 
-session = requests_cache.CachedSession('jwks-cache', cache_control=True)
+session = requests_cache.CachedSession('jwks-cache', backend='memory',cache_control=True)
 
 def get_jwks(url: str):
     jwks_response = session.get(url)
