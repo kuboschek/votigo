@@ -12,6 +12,7 @@
             "env": {
                 "JWKS_URL": "https://www.googleapis.com/oauth2/v3/certs",
                 "FAKE_AUTH": "true",
+                "CORS_ORIGINS": "*",
             },
             "args": [
                 "main:app",

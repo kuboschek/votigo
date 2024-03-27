@@ -2,6 +2,7 @@ import os
 from uuid import UUID
 
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from auth.middleware import CurrentUser, FakeUser, User as UserModel
 from vote.aggregate import Vote
@@ -20,13 +21,22 @@ tags_metadata = [
 ]
 
 app = FastAPI(openapi_tags=tags_metadata)
-votigo = Votigo()
+
+origins = os.getenv("CORS_ORIGINS", "").split(",")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[origin.strip() for origin in origins if origin.strip()],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 if os.getenv("FAKE_AUTH") == "true":
     User = FakeUser
 else:
     User = CurrentUser
 
+votigo = Votigo()
 
 @app.post("/vote", tags=["votes"], response_model=ReadFullVote)
 def create_vote(user: User):
