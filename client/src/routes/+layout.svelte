@@ -5,7 +5,14 @@
 
 <AppShell>
 	<svelte:fragment slot="header">
-		<AppBar>Skeleton</AppBar>
+		<AppBar>
+			<a href="/"><h1 class="h1">Votigo</h1></a>
+			<svelte:fragment slot="trail">
+				
+			</svelte:fragment>
+		</AppBar>
 	</svelte:fragment>
-	<slot />
+	<div class="container p-4">
+		<slot />
+	</div>
 </AppShell>

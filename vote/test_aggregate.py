@@ -11,7 +11,7 @@ class TestVoteAggregate(unittest.TestCase):
 
     def test_update_title(self):
         new_title = "New Vote Title"
-        self.vote.update_title(new_title)
+        self.vote.set_title(new_title)
         self.assertEqual(self.vote.title, new_title)
 
     def test_choose_filter(self):

@@ -5,9 +5,10 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from auth.middleware import CurrentUser, FakeUser, User as UserModel
+from option.aggregate import Option
 from vote.aggregate import Vote
 from votigo.application import Votigo, AggregateNotFound
-from votigo.data_models import ReadFullVote, UpdateOption
+from votigo.data_models import ReadFullVote, UpdateOption, UpdateVote
 
 tags_metadata = [
     {
@@ -64,6 +65,9 @@ def open_vote(vote_id: UUID, user: User):
 def close_vote(vote_id: UUID, user: User):
     return votigo.stop_vote(vote_id)
 
+@app.post("/vote/{vote_id}", tags=["votes"])
+def update_vote(vote_id: UUID, values: UpdateVote):
+    return votigo.update_vote(vote_id, values)
 
 @app.post("/vote/{vote_id}/vote", tags=["votes"])
 def vote(vote_id: UUID, user: User, option_id: UUID):
@@ -73,7 +77,7 @@ def vote(vote_id: UUID, user: User, option_id: UUID):
     return votigo.vote(vote_id, user.id, option_id)
 
 
-@app.post("/vote/{vote_id}/option", tags=["options"])
+@app.post("/vote/{vote_id}/option", tags=["options"], response_model=Option)
 def add_option(vote_id: UUID, values: UpdateOption):
     return votigo.add_option(vote_id, values)
 

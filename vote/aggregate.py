@@ -34,7 +34,7 @@ class Vote(Aggregate):
     title: str = ""
 
     @event("UpdateTitle")
-    def update_title(self, new_title: str):
+    def set_title(self, new_title: str):
         self.title = new_title
 
     @event("ChooseFilter")

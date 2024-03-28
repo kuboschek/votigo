@@ -4,7 +4,7 @@ from eventsourcing.application import AggregateNotFound, Application
 
 from option.aggregate import Option
 from vote.aggregate import Vote
-from votigo.data_models import ReadFullVote, UpdateOption
+from votigo.data_models import ReadFullVote, UpdateOption, UpdateVote
 
 
 class Votigo(Application):
@@ -13,6 +13,18 @@ class Votigo(Application):
         self.save(vote)
 
         return vote
+    
+    def get_vote(self, vote_id: UUID) -> Vote:
+        return self.repository.get(vote_id)
+    
+    def update_vote(self, vote_id: UUID, values: UpdateVote):
+        vote: Vote = self.repository.get(vote_id)
+
+        if values.title != vote.title:
+            vote.set_title(values.title)
+        
+        self.save(vote)
+
     
     def add_option(self, vote_id: UUID, values: UpdateOption) -> Option:
         vote: Vote = self.repository.get(vote_id)
@@ -33,10 +45,10 @@ class Votigo(Application):
         if not option.editable:
             raise ValueError("Can't update option once it's read only")
 
-        if values.title != option.title:
+        if values.title and values.title != option.title:
             option.set_title(values.title)
 
-        if values.ordering != option.ordering:
+        if values.ordering and values.ordering != option.ordering:
             option.set_ordering(values.ordering)
 
         self.save(option)
@@ -74,9 +86,6 @@ class Votigo(Application):
         option.count_vote()
 
         self.save(vote, option)
-
-    def get_vote(self, vote_id: UUID) -> Vote:
-        return self.repository.get(vote_id)
     
     def lock_vote(self, vote_id: UUID):
         vote: Vote = self.repository.get(vote_id)
