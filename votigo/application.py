@@ -1,10 +1,10 @@
 from uuid import UUID
-from eventsourcing.application import Application
+
+from eventsourcing.application import AggregateNotFound, Application
 
 from option.aggregate import Option
 from vote.aggregate import Vote
 from votigo.data_models import ReadFullVote, UpdateOption
-
 
 
 class Votigo(Application):

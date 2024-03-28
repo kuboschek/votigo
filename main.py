@@ -1,12 +1,12 @@
 import os
 from uuid import UUID
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from auth.middleware import CurrentUser, FakeUser, User as UserModel
 from vote.aggregate import Vote
-from votigo.application import Votigo
+from votigo.application import Votigo, AggregateNotFound
 from votigo.data_models import ReadFullVote, UpdateOption
 
 tags_metadata = [
@@ -46,8 +46,11 @@ def create_vote(user: User):
 
 @app.get("/vote/{vote_id}", tags=["votes"], response_model=ReadFullVote)
 def read_vote(vote_id: UUID):
-    vote = votigo.get_vote(vote_id)
-    options = [votigo.get_option(option_id) for option_id in vote.option_ids]
+    try:
+        vote = votigo.get_vote(vote_id)
+        options = [votigo.get_option(option_id) for option_id in vote.option_ids]
+    except AggregateNotFound:
+        raise HTTPException(status_code=404, detail="Vote not found")
 
     return ReadFullVote(vote=vote, options=options)
 
