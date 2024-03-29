@@ -94,27 +94,42 @@
     <title>{data.vote.title || "Votigo"}</title>
 </svelte:head>
 
-<div class="container">
-    <div class="my-2">
-        <input readonly={!data.vote.editable} class="h2 p-2" bind:value={data.vote.title} on:change={updateVote} placeholder="<title>" type="text">
-    </div>
-    <div>
-        <h3 class="h3">Options</h3>
-    </div>
-    <div class="grid grid-cols-3">
-        {#each data.options as option}
-        <div>
-            <input readonly={!data.vote.editable} class="flex-auto p-2 rounded-full" placeholder="<remove option>" bind:value={option.title} on:change={() => sendOptionChange(option._id)}>
-        </div>
-        {/each}
-        <div>
-            <input readonly={!data.vote.editable} class="flex-auto p-2 rounded-full" placeholder="<add option>" bind:this={optionInput} bind:value={newOptionTitle} on:change={(event) => createOption()}>
-        </div>
-    </div>
+<div class="p-4 container mx-auto">
+    <h2 class="h2">Edit</h2>
 </div>
 
+<div class="p-4 container mx-auto space-y-10 lg:space-y-0 lg:grid-cols-2 lg:grid lg:gap-4">
+    <section class="space-y-2">
+        <h3 class="h3">Title</h3>
+        <input readonly={!data.vote.editable} class="h4 p-2 rounded-md w-full" bind:value={data.vote.title} on:change={updateVote} placeholder="Auditor 1989" type="text">
+    </section>
+    <section class="space-y-2">
+        <h3 class="h3">Prompt</h3>
+        <input readonly={!data.vote.editable} class="p-2 rounded-md w-full" placeholder="Who do you choose as auditor?" type="text">
+    </section>
+    <section class="space-y-2">
+        <h3 class="h3">Choices</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 sm:grid-cols-2 gap-2">
+            {#each data.options as option}
+            <div class="flex-auto">
+                <input readonly={!data.vote.editable} class="w-full p-2 rounded-md" placeholder="" bind:value={option.title} on:change={() => sendOptionChange(option._id)}>
+            </div>
+            {/each}
+            <div class="flex-auto">
+                <input readonly={!data.vote.editable} class="w-full p-2 rounded-md" placeholder="Dr. John Watson" bind:this={optionInput} bind:value={newOptionTitle} on:change={(event) => createOption()}>
+            </div>
+        </div>
+    </section>
+    <section class="space-y-2">
+        <h3 class="h3">Eligibility</h3>
+        <pre>TODO Add filter picker / editor</pre>
+    </section>
+</div>
+
+<!--
 <div class="text-sm">
     {#if dev}
     <pre>{JSON.stringify(data, null, 2)}</pre>
     {/if}
 </div>
+-->
