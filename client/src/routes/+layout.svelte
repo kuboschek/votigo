@@ -1,7 +1,11 @@
 <script>
 	import '../app.pcss';
-	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
+	import { AppShell, AppBar, initializeStores, Toast } from '@skeletonlabs/skeleton';
+
+	initializeStores();
 </script>
+
+<Toast />
 
 <AppShell>
 	<svelte:fragment slot="header">

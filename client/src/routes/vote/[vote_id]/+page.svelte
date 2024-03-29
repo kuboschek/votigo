@@ -1,18 +1,19 @@
 <script lang="ts">
-	import { dev } from '$app/environment';
 	import { invalidateAll } from '$app/navigation';
 	import {
+		OptionsService,
 		VotesService,
-		type UpdateVote,
-		type Vote,
-		type UpdateOption,
-		OptionsService
+		type UpdateVote
 	} from '$lib';
+	import { Check, CheckCircle, Icon, LockClosed, LockOpen, XCircle } from 'svelte-hero-icons';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
 	let newOptionTitle: string;
+
+    $: optionButtonActive = newOptionTitle !== undefined && newOptionTitle !== '';
+
 	let optionInput: HTMLInputElement;
 
 	async function updateVote() {
@@ -54,6 +55,18 @@
 		}
 	}
 
+
+    async function removeOption(optionId: string) {
+        try {
+            await OptionsService.removeOptionVoteVoteIdOptionOptionIdDelete(data.vote._id, optionId);
+            data.options = data.options.filter((option) => option._id !== optionId);
+            data.vote.option_ids = data.vote.option_ids.filter((id) => id !== optionId);
+        } catch (error) {
+            invalidateAll();
+            console.error(error);
+        }
+    }
+
 	async function sendOptionChange(optionId: string) {
 		const option = data.options.find((option) => option._id === optionId);
 
@@ -61,14 +74,7 @@
 
 		// Empty options -> removal
 		if (option.title === undefined || option.title === '') {
-			try {
-				await OptionsService.removeOptionVoteVoteIdOptionOptionIdDelete(data.vote._id, optionId);
-				data.options = data.options.filter((option) => option._id !== optionId);
-				data.vote.option_ids = data.vote.option_ids.filter((id) => id !== optionId);
-			} catch (error) {
-				invalidateAll();
-				console.error(error);
-			}
+            await removeOption(optionId);
 			return;
 		}
 
@@ -95,8 +101,19 @@
 	<title>{data.vote.title || 'Votigo'}</title>
 </svelte:head>
 
-<div class="container mx-auto p-4">
-	<h2 class="h2">Edit</h2>
+<div class="container mx-auto p-4 flex justify-between">
+    <section>
+        <h2 class="h2">Edit</h2>
+    </section>
+	<section>
+        <div>
+            {#if data.vote.editable}
+                <Icon src="{LockOpen}" solid={false} class="w-6 h-6 cursor-pointer" />
+            {:else}
+                <Icon src="{LockClosed}" solid={true} class="w-6 h-6" />
+            {/if}
+        </div>
+    </section>
 </div>
 
 <div class="container mx-auto space-y-10 p-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
@@ -128,7 +145,7 @@
 		<h3 class="h3">Choices</h3>
 		<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
 			{#each data.options as option}
-				<div class="flex-auto">
+				<div class="flex flex-auto rounded-md items-center gap-2">
 					<input
 						readonly={!data.vote.editable}
 						class="w-full rounded-md p-2"
@@ -138,15 +155,18 @@
 					/>
 				</div>
 			{/each}
-			<div class="flex-auto">
+			<div class="flex flex-auto rounded-md items-center gap-2">
 				<input
 					readonly={!data.vote.editable}
-					class="w-full rounded-md p-2"
+					class="grow rounded-md p-2 bg-none"
 					placeholder="Dr. John Watson"
 					bind:this={optionInput}
 					bind:value={newOptionTitle}
 					on:change={createOption}
 				/>
+                {#if optionButtonActive}
+                <Icon on:click={createOption} src="{CheckCircle}" class="w-6 h-6 cursor-pointer" />
+                {/if}
 			</div>
 		</div>
 	</section>

@@ -376,6 +376,11 @@
   resolved "https://registry.yarnpkg.com/@skeletonlabs/tw-plugin/-/tw-plugin-0.3.1.tgz#75ba4d100948c59b70ec5343f637d3aeb155f878"
   integrity sha512-DjjeOHN3HhFQf6gYPT2MUZMkIdw1jeB9mbuKC8etQxUlOR4XitfC7hssRWFJ8RJsvrrN0myCBbdWkVG1JVA96g==
 
+"@steeze-ui/heroicons@^2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@steeze-ui/heroicons/-/heroicons-2.3.0.tgz#692e056ab441d028d01ab1f18013482d35e8609a"
+  integrity sha512-tVOamjAd9ZzXgDwVKwbA3K+o86Z1ks/IMvqdgoCf9hKeGINVUIlAlGhM3wdpSmt7brIoBLgR70wlnsXGytZk9g==
+
 "@sveltejs/adapter-auto@^3.0.0":
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/@sveltejs/adapter-auto/-/adapter-auto-3.2.0.tgz#00720dfad99f95452c6e47cc64a1cb58324337d2"
@@ -2019,6 +2024,11 @@ postcss@^8.4.23, postcss@^8.4.29, postcss@^8.4.32, postcss@^8.4.36, postcss@^8.4
     picocolors "^1.0.0"
     source-map-js "^1.2.0"
 
+pre-js-py@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/pre-js-py/-/pre-js-py-1.2.0.tgz#1907decbd29d6563451e692e751672bf88e020f1"
+  integrity sha512-I4vq1QJrKawdfLgmYFtClhOqy5ltDFyLY5GXQVSWtGZWqhDCybXBZr81XJKviLHUAe/hhck4ToWeUf/19r3KFw==
+
 prelude-ls@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.2.1.tgz#debc6489d7a6e6b0e7611888cec880337d316396"
@@ -2341,6 +2351,13 @@ svelte-check@^3.6.0:
     espree "^9.0.0"
     postcss "^8.4.29"
     postcss-scss "^4.0.8"
+
+svelte-hero-icons@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/svelte-hero-icons/-/svelte-hero-icons-5.1.0.tgz#5704dbf29bcfc38aec8de22d9d0d5c9bb5aa9bee"
+  integrity sha512-8Z5+jpwFktz5aO325EAGo7nf4ailOKO8w+8Se1aHPVw/DiILuLMbxV6/xOfqpWPux2u7apMsBnMh4cWLbBN/xw==
+  dependencies:
+    "@steeze-ui/heroicons" "^2.3.0"
 
 svelte-hmr@^0.15.3:
   version "0.15.3"
