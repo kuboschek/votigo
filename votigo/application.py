@@ -22,6 +22,9 @@ class Votigo(Application):
 
         if values.title != vote.title:
             vote.set_title(values.title)
+
+        if values.prompt != vote.prompt:
+            vote.set_prompt(values.prompt)
         
         self.save(vote)
 

@@ -21,3 +21,4 @@ class UpdateOption(BaseModel):
 
 class UpdateVote(BaseModel):
     title: str
+    prompt: str

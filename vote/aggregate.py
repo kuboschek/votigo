@@ -32,10 +32,15 @@ class Vote(Aggregate):
     started: bool = False
     stopped: bool = False
     title: str = ""
+    prompt: str = ""
 
-    @event("UpdateTitle")
+    @event("SetTitle")
     def set_title(self, new_title: str):
         self.title = new_title
+
+    @event("SetPrompt")
+    def set_prompt(self, new_prompt: str):
+        self.prompt = new_prompt
 
     @event("ChooseFilter")
     def choose_filter(self, filter_id: UUID, filter_version: int):

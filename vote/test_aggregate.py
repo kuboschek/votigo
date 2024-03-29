@@ -14,6 +14,11 @@ class TestVoteAggregate(unittest.TestCase):
         self.vote.set_title(new_title)
         self.assertEqual(self.vote.title, new_title)
 
+    def test_update_prompt(self):
+        new_prompt = "New Vote Prompt"
+        self.vote.set_prompt(new_prompt)
+        self.assertEqual(self.vote.prompt, new_prompt)
+
     def test_choose_filter(self):
         filter_id = uuid.uuid4()
         filter_version = 12
