@@ -77,13 +77,13 @@ class Votigo(Application):
         option: Option = self.repository.get(option_id)
 
         if not vote.can_be_voted_on:
-            raise ValueError("Can't vote on this vote")
+            raise ValueError("This vote is not ready to vote on.")
         
         if user_id in vote.voter_ids:
-            raise ValueError("User already voted")
+            raise ValueError("You already voted")
         
         if option_id not in vote.option_ids:
-            raise ValueError("Option not in vote")
+            raise ValueError("The selected option is not in this vote")
         
         vote.add_voter(user_id)
         option.count_vote()

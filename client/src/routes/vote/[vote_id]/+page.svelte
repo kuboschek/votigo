@@ -1,98 +1,51 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
-	import {
-		OptionsService,
-		VotesService,
-		type UpdateVote
-	} from '$lib';
-	import { Check, CheckCircle, Icon, LockClosed, LockOpen, XCircle } from 'svelte-hero-icons';
-	import type { PageData } from './$types';
+	import { dev } from '$app/environment';
+	import { ApiError, VotesService } from '$lib';
+	import { getModalStore, type ModalSettings } from '@skeletonlabs/skeleton';
+	import { ArrowRight, ExclamationTriangle, Icon } from 'svelte-hero-icons';
+	import type { PageData } from '../$types';
+	import { Warning } from 'postcss';
+	import { goto } from '$app/navigation';
 
 	export let data: PageData;
+	$: canBeVotedOn = !data.vote.editable && data.vote.started && !data.vote.stopped;
 
-	let newOptionTitle: string;
+	let selectedOptionId: string;
 
-    $: optionButtonActive = newOptionTitle !== undefined && newOptionTitle !== '';
+	const modalStore = getModalStore();
 
-	let optionInput: HTMLInputElement;
-
-	async function updateVote() {
-		const vote: UpdateVote = {
-			title: data.vote.title || '',
-			prompt: data.vote.prompt || ''
-		};
-
-		try {
-			await VotesService.updateVoteVoteVoteIdPost(data.vote._id, vote);
-			data.vote = {
-				...data.vote,
-				...vote
-			};
-		} catch (error) {
-			invalidateAll();
-			console.error(error);
-		}
+	async function selectOption(optionId: string) {
+		console.log(optionId);
+		selectedOptionId = optionId;
 	}
 
-	async function createOption() {
-		if (newOptionTitle === undefined || newOptionTitle === '') return;
-
-		const newOption = {
-			title: newOptionTitle,
-			ordering: Math.max(...data.options.map((option) => option.ordering || 0), 0) + 1
-		};
-
+	async function handleVoteButton() {
 		try {
-			const response = await OptionsService.addOptionVoteVoteIdOptionPost(data.vote._id, newOption);
-			data.options = [...data.options, response];
-			data.vote.option_ids.push(response._id);
+			await VotesService.voteVoteVoteIdVotePost(data.vote._id, selectedOptionId);
+            const successModal: ModalSettings = {
+                type: 'alert',
+                title: 'Success',
+                body: 'Your vote has been counted!',
+                modalClasses: '!bg-success-500 !text-white',
+                buttonTextCancel: 'Close',
+
+                response(r) {
+                    goto('/');
+                }
+            };
+
+            modalStore.trigger(successModal);
 		} catch (error) {
-			invalidateAll();
-			console.error(error);
-		} finally {
-			newOptionTitle = '';
-			optionInput.focus();
-		}
-	}
+			const apiError = error as ApiError;
 
-
-    async function removeOption(optionId: string) {
-        try {
-            await OptionsService.removeOptionVoteVoteIdOptionOptionIdDelete(data.vote._id, optionId);
-            data.options = data.options.filter((option) => option._id !== optionId);
-            data.vote.option_ids = data.vote.option_ids.filter((id) => id !== optionId);
-        } catch (error) {
-            invalidateAll();
-            console.error(error);
-        }
-    }
-
-	async function sendOptionChange(optionId: string) {
-		const option = data.options.find((option) => option._id === optionId);
-
-		if (option === undefined) return;
-
-		// Empty options -> removal
-		if (option.title === undefined || option.title === '') {
-            await removeOption(optionId);
-			return;
-		}
-
-		try {
-			await OptionsService.updateOptionOptionOptionIdPut(optionId, {
-				title: option.title,
-				ordering: option.ordering || 0
-			});
-
-			// Update the option in the data
-			const index = data.options.findIndex((option) => option._id === optionId);
-			data.options[index] = {
-				...data.options[index],
-				...option
+			const errorModal: ModalSettings = {
+				type: 'alert',
+				title: 'Error',
+				body: apiError.body.detail || apiError.statusText || 'An error occurred',
+				modalClasses: '!bg-error-500 !text-white'
 			};
-		} catch (error) {
-			invalidateAll();
-			console.error(error);
+
+			modalStore.trigger(errorModal);
 		}
 	}
 </script>
@@ -102,84 +55,49 @@
 </svelte:head>
 
 <div class="container mx-auto p-4 flex justify-between">
-    <section>
-        <h2 class="h2">Edit</h2>
-    </section>
 	<section>
-        <div>
-            {#if data.vote.editable}
-                <Icon src="{LockOpen}" solid={false} class="w-6 h-6 cursor-pointer" />
-            {:else}
-                <Icon src="{LockClosed}" solid={true} class="w-6 h-6" />
-            {/if}
+		<h2 class="h2">{data.vote.title}</h2>
+		<p class="text-gray-500">{data.vote.prompt}</p>
+	</section>
+    {#if !canBeVotedOn}
+    <section>
+        <div class="card p-4 bg-warning-500 border border-warning-400 shadow flex gap-2">
+            <span>
+                <Icon src={ExclamationTriangle} class="h-6 w-6" />
+            </span>
+            <span>
+                This vote is not open yet.
+            </span>
         </div>
     </section>
-</div>
-
-<div class="container mx-auto space-y-10 p-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
-	<section class="space-y-2">
-		<label for="vote_title" class="h3">Title</label>
-		<input
-			id="vote_title"
-			readonly={!data.vote.editable}
-			class="h4 w-full rounded-md p-2"
-			bind:value={data.vote.title}
-			on:change={updateVote}
-			placeholder="Auditor 1989"
-			type="text"
-		/>
-	</section>
-	<section class="space-y-2">
-		<label for="vote_prompt" class="h3">Prompt</label>
-		<input
-			id="vote_prompt"
-			readonly={!data.vote.editable}
-			class="w-full rounded-md p-2"
-			bind:value={data.vote.prompt}
-			on:change={updateVote}
-			placeholder="Who do you choose as auditor?"
-			type="text"
-		/>
-	</section>
-	<section class="space-y-2">
-		<h3 class="h3">Choices</h3>
-		<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-			{#each data.options as option}
-				<div class="flex flex-auto rounded-md items-center gap-2">
-					<input
-						readonly={!data.vote.editable}
-						class="w-full rounded-md p-2"
-						placeholder=""
-						bind:value={option.title}
-						on:change={() => sendOptionChange(option._id)}
-					/>
-				</div>
-			{/each}
-			<div class="flex flex-auto rounded-md items-center gap-2">
-				<input
-					readonly={!data.vote.editable}
-					class="grow rounded-md p-2 bg-none"
-					placeholder="Dr. John Watson"
-					bind:this={optionInput}
-					bind:value={newOptionTitle}
-					on:change={createOption}
-				/>
-                {#if optionButtonActive}
-                <Icon on:click={createOption} src="{CheckCircle}" class="w-6 h-6 cursor-pointer" />
-                {/if}
-			</div>
-		</div>
-	</section>
-	<section class="space-y-2">
-		<h3 class="h3">Eligibility</h3>
-		<pre>TODO Add filter picker / editor</pre>
-	</section>
-</div>
-
-<!--
-<div class="text-sm">
-    {#if dev}
-    <pre>{JSON.stringify(data, null, 2)}</pre>
     {/if}
 </div>
--->
+
+<div class="container mx-auto grid grid-cols-1 gap-2 p-4 sm:grid-cols-2 md:grid-cols-3">
+	{#each data.options as option}
+		<button
+			class:variant-filled-primary={option._id === selectedOptionId}
+			class="card flex flex-auto items-center gap-2 rounded-md transition-colors"
+			on:click={() => selectOption(option._id)}
+		>
+			<span class="w-full rounded-md p-2">{option.title}</span>
+		</button>
+	{/each}
+</div>
+
+<div class="container mx-auto flex justify-end p-4">
+	<button
+		disabled={!selectedOptionId || !canBeVotedOn}
+		class="button btn variant-filled"
+		on:click={handleVoteButton}
+	>
+		<span>Confirm</span>
+		<span><Icon src={ArrowRight} class="h-6 w-6" /></span>
+	</button>
+</div>
+
+{#if dev}
+	<div class="container mx-auto p-4">
+		<pre>{JSON.stringify(data, null, 2)}</pre>
+	</div>
+{/if}

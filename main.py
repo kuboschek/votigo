@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from auth.middleware import CurrentUser, FakeUser, User as UserModel
 from option.aggregate import Option
@@ -37,7 +38,15 @@ if os.getenv("FAKE_AUTH") == "true":
 else:
     User = CurrentUser
 
+# The main event-sourced application
 votigo = Votigo()
+
+@app.exception_handler(AggregateNotFound)
+def not_found_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=404,
+        content={"message": str(exc)}
+    )
 
 @app.post("/vote", tags=["votes"], response_model=ReadFullVote)
 def create_vote(user: User):
@@ -47,19 +56,18 @@ def create_vote(user: User):
 
 @app.get("/vote/{vote_id}", tags=["votes"], response_model=ReadFullVote)
 def read_vote(vote_id: UUID):
-    try:
-        vote = votigo.get_vote(vote_id)
-        options = [votigo.get_option(option_id) for option_id in vote.option_ids]
-    except AggregateNotFound:
-        raise HTTPException(status_code=404, detail="Vote not found")
+    vote = votigo.get_vote(vote_id)
+    options = [votigo.get_option(option_id) for option_id in vote.option_ids]
 
     return ReadFullVote(vote=vote, options=options)
 
+@app.post("/vote/{vote_id}/lock", tags=["votes"])
+def lock_vote(vote_id: UUID, user: User):
+    return votigo.lock_vote(vote_id)
 
 @app.post("/vote/{vote_id}/open", tags=["votes"])
 def open_vote(vote_id: UUID, user: User):
     return votigo.start_vote(vote_id)
-
 
 @app.post("/vote/{vote_id}/close", tags=["votes"])
 def close_vote(vote_id: UUID, user: User):
@@ -74,7 +82,10 @@ def vote(vote_id: UUID, user: User, option_id: UUID):
     """
         Register a vote for a user on a vote.
     """
-    return votigo.vote(vote_id, user.id, option_id)
+    try:
+        return votigo.vote(vote_id, user.id, option_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/vote/{vote_id}/option", tags=["options"], response_model=Option)

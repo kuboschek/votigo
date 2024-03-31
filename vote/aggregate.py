@@ -33,7 +33,7 @@ class Vote(Aggregate):
     stopped: bool = False
     title: str = ""
     prompt: str = ""
-
+    
     @event("SetTitle")
     def set_title(self, new_title: str):
         self.title = new_title
