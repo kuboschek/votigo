@@ -7,6 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, SerializeAsAny
 
+from filter.data_models import Condition
 from option.aggregate import Option
 from vote.aggregate import Vote
 
@@ -22,3 +23,7 @@ class UpdateOption(BaseModel):
 class UpdateVote(BaseModel):
     title: str
     prompt: str
+
+class UpdateFilter(BaseModel):
+    title: str
+    condition: Condition

@@ -6,10 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from auth.middleware import CurrentUser, FakeUser, User as UserModel
+from filter.aggregate import Filter
 from option.aggregate import Option
 from vote.aggregate import Vote
 from votigo.application import Votigo, AggregateNotFound
-from votigo.data_models import ReadFullVote, UpdateOption, UpdateVote
+from votigo.data_models import ReadFullVote, UpdateFilter, UpdateOption, UpdateVote
 
 tags_metadata = [
     {
@@ -101,3 +102,16 @@ def update_option(option_id: UUID, values: UpdateOption):
 @app.delete("/vote/{vote_id}/option/{option_id}", tags=["options"])
 def remove_option(vote_id: UUID, option_id: UUID):
     return votigo.remove_option(vote_id, option_id)
+
+
+@app.post("/filter", tags=["filters"], response_model=Filter)
+def create_filter(user: User):
+    return votigo.create_filter(user.sub)
+
+@app.get("/filter/{filter_id}", tags=["filters"], response_model=Filter)
+def read_filter(filter_id: UUID):
+    return votigo.get_filter(filter_id)
+
+@app.post("/filter/{filter_id}", tags=["filters"])
+def update_filter(filter_id: UUID, values: UpdateFilter):
+    return votigo.update_filter(filter_id, values)

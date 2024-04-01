@@ -1,10 +1,13 @@
+from typing import Optional
 from uuid import UUID
 
 from eventsourcing.application import AggregateNotFound, Application
 
+from filter.aggregate import Filter
 from option.aggregate import Option
 from vote.aggregate import Vote
-from votigo.data_models import ReadFullVote, UpdateOption, UpdateVote
+from votigo.data_models import (ReadFullVote, UpdateFilter, UpdateOption,
+                                UpdateVote)
 
 
 class Votigo(Application):
@@ -27,6 +30,48 @@ class Votigo(Application):
             vote.set_prompt(values.prompt)
         
         self.save(vote)
+
+    def lock_vote(self, vote_id: UUID):
+        vote: Vote = self.repository.get(vote_id)
+        vote.lock_settings()
+        options: list[Option] = [self.repository.get(option_id) for option_id in vote.option_ids]
+
+        for option in options:
+            if option.count > 0:
+                raise ValueError("Can't start vote with options that already have votes")
+            option.lock_editing()
+
+        self.save(*options, vote)
+
+    def start_vote(self, vote_id: UUID):
+        vote: Vote = self.repository.get(vote_id)
+            
+        vote.start()
+        self.save(vote)
+    
+    def stop_vote(self, vote_id: UUID):
+        vote: Vote = self.repository.get(vote_id)
+        vote.stop()
+        self.save(vote)
+
+    def vote(self, vote_id: UUID, user_id: str, option_id: UUID):
+        """ Count a vote for the authenticated user."""
+        vote: Vote = self.repository.get(vote_id)
+        option: Option = self.repository.get(option_id)
+
+        if not vote.can_be_voted_on:
+            raise ValueError("This vote is not ready to vote on.")
+        
+        if user_id in vote.voter_ids:
+            raise ValueError("You already voted")
+        
+        if option_id not in vote.option_ids:
+            raise ValueError("The selected option is not in this vote")
+        
+        vote.add_voter(user_id)
+        option.count_vote()
+
+        self.save(vote, option)
 
     
     def add_option(self, vote_id: UUID, values: UpdateOption) -> Option:
@@ -71,44 +116,18 @@ class Votigo(Application):
 
     def get_option(self, option_id: UUID) -> Option:
         return self.repository.get(option_id)
-
-    def vote(self, vote_id: UUID, user_id: str, option_id: UUID):
-        vote: Vote = self.repository.get(vote_id)
-        option: Option = self.repository.get(option_id)
-
-        if not vote.can_be_voted_on:
-            raise ValueError("This vote is not ready to vote on.")
-        
-        if user_id in vote.voter_ids:
-            raise ValueError("You already voted")
-        
-        if option_id not in vote.option_ids:
-            raise ValueError("The selected option is not in this vote")
-        
-        vote.add_voter(user_id)
-        option.count_vote()
-
-        self.save(vote, option)
     
-    def lock_vote(self, vote_id: UUID):
-        vote: Vote = self.repository.get(vote_id)
-        vote.lock_settings()
-        options: list[Option] = [self.repository.get(option_id) for option_id in vote.option_ids]
 
-        for option in options:
-            if option.count > 0:
-                raise ValueError("Can't start vote with options that already have votes")
-            option.lock_editing()
-
-        self.save(*options, vote)
-
-    def start_vote(self, vote_id: UUID):
-        vote: Vote = self.repository.get(vote_id)
-            
-        vote.start()
-        self.save(vote)
+    def create_filter(self, creator: str) -> Filter:
+        filter = Filter(creator, {})
+        self.save(filter)
+        return filter
     
-    def stop_vote(self, vote_id: UUID):
-        vote: Vote = self.repository.get(vote_id)
-        vote.stop()
-        self.save(vote)
+    def get_filter(self, filter_id: UUID, version: Optional[int] = None) -> Filter:
+        return self.repository.get(filter_id, version=version)
+    
+    def update_filter(self, filter_id: UUID, data: UpdateFilter):
+        filter: Filter = self.repository.get(filter_id)
+        filter.change_condition(data.condition)
+        filter.change_title(data.title)
+        self.save(filter)
