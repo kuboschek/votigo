@@ -2,8 +2,10 @@ from typing import Optional
 from uuid import UUID
 
 from eventsourcing.application import AggregateNotFound, Application
+from eventsourcing.persistence import Transcoder
 
 from filter.aggregate import Filter
+from filter.transcoding import ConditionTranscoding
 from option.aggregate import Option
 from vote.aggregate import Vote
 from votigo.data_models import (ReadFullVote, UpdateFilter, UpdateOption,
@@ -131,3 +133,9 @@ class Votigo(Application):
         filter.change_condition(data.condition)
         filter.change_title(data.title)
         self.save(filter)
+
+    def construct_transcoder(self) -> Transcoder:
+        t = super().construct_transcoder()
+        t.register(ConditionTranscoding())
+
+        return t

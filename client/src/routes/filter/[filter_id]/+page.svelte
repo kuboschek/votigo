@@ -1,77 +1,40 @@
 <script lang="ts">
-import { FiltersService, type UpdateFilter } from "$lib";
-	import Condition from "$lib/filter/condition.svelte";
-import type { PageData } from "./$types";
-export let data: PageData;
+	import { FiltersService, type UpdateFilter } from '$lib';
+	import Condition from '$lib/filter/condition.svelte';
+	import type { PageData } from './$types';
+	export let data: PageData;
 
-const fakeFilterCondition = {
-		type: 'AND',
-		parts: [
-			{
-				type: 'EQ',
-				pointer: '/name',
-				target_value: 'John'
-			},
-			{
-				type: 'OR',
-				parts: [
-					{
-						type: 'EQ',
-						pointer: '/age',
-						target_value: 30
-					},
-					{
-						type: 'EQ',
-						pointer: '/age',
-						target_value: 40
-					}
-				]
-			},
-            {
-                type: 'AND',
-                parts: [
-                    {
-                        type: 'EQ',
-                        pointer: '/address',
-                        target_value: '123 Main St.'
-                    },
-                    {
-                        type: 'EQ',
-                        pointer: '/city',
-                        target_value: 'Anytown'
-                    }
-                ]
-            }
-		]
+	async function updateFilterCondition(event: CustomEvent<{ subtree: any }>) {
+		data.condition.tree = event.detail.subtree;
+		await updateFilter()
 	}
 
-async function updateFilter() {
-    const filter: UpdateFilter = {
-        title: data.title || '',
-        condition: data.condition || ''
-    };
+	async function updateFilter() {
+		const filter: UpdateFilter = {
+			title: data.title || '',
+			condition: data.condition || {}
+		};
 
-    try {
-        await FiltersService.updateFilterFilterFilterIdPost(data._id, filter);
-        data = {
-            ...data,
-            ...filter
-        };
-    } catch (error) {
-        console.error(error);
-    }
-}
-
+		try {
+			await FiltersService.updateFilterFilterFilterIdPost(data._id, filter);
+			data = {
+				...data,
+				...filter
+			};
+		} catch (error) {
+			console.error(error);
+		}
+	}
 </script>
 
 <svelte:head>
 	<title>{data.title || 'Votigo'}</title>
 </svelte:head>
 
-<div class="container mx-auto p-4 flex justify-between">
-    <section>
-        <h2 class="h2">Edit Filter</h2>
-    </section>
+<div class="container mx-auto flex justify-between p-4">
+	<section>
+		<h2 class="h2">Edit Filter</h2>
+	</section>
 </div>
 
 <div class="container mx-auto space-y-10 p-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
@@ -88,14 +51,14 @@ async function updateFilter() {
 	</section>
 	<section class="space-y-2">
 		<h3 class="h3">Criteria</h3>
-        <div class="mx-auto">
-            <Condition conditionTree={fakeFilterCondition} />
-        </div>
+		<div class="mx-auto">
+			<Condition conditionTree={data.condition.tree} on:subtreeUpdate={updateFilterCondition}/>
+		</div>
 	</section>
 </div>
 
-<div class="container mx-auto p-4 flex justify-between">
-    <section>
-        <pre>{JSON.stringify(data, null, 2)}</pre>
-    </section>
+<div class="container mx-auto flex justify-between p-4">
+	<section>
+		<pre>{JSON.stringify(data, null, 2)}</pre>
+	</section>
 </div>
