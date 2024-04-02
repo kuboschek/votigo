@@ -2,7 +2,7 @@
 	import type { AndCondition_Input, EqCondition, OrCondition_Input } from '$lib';
 	import { getModalStore, type ModalSettings } from '@skeletonlabs/skeleton';
 	import { createEventDispatcher } from 'svelte';
-	import { Icon, Plus } from 'svelte-hero-icons';
+	import { Icon, Plus, Trash } from 'svelte-hero-icons';
 	import { fields } from './fields';
 
 	export let conditionTree: AndCondition_Input | OrCondition_Input | EqCondition;
@@ -14,7 +14,7 @@
 	$: resolvedPointer = fields[conditionTree.pointer] || conditionTree.pointer;
 
 	const modal = getModalStore();
-    const dispatch = createEventDispatcher();
+	const dispatch = createEventDispatcher();
 
 	function maybeCastToNumber() {
 		if (!conditionTree.target_value) return;
@@ -24,47 +24,51 @@
 			conditionTree.target_value = Number(conditionTree.target_value);
 		}
 
-        sendSubtreeUpdate()
+		sendSubtreeUpdate();
 	}
 
-    function sendSubtreeUpdate() {
-        dispatch('subtreeUpdate', { subtree: conditionTree });
-    }
+	function sendSubtreeUpdate() {
+		dispatch('subtreeUpdate', { subtree: conditionTree });
+	}
 
-    function handleSubtreeUpdate(event: CustomEvent<{ subtree: any }>, partIndex: number) {
-        conditionTree.parts[partIndex] = event.detail.subtree;
+	function handleSubtreeUpdate(event: CustomEvent<{ subtree: any }>, partIndex: number) {
+		conditionTree.parts[partIndex] = event.detail.subtree;
 
-        sendSubtreeUpdate()
-    }
+		sendSubtreeUpdate();
+	}
+
+	function removePart(partIndex: number) {
+		conditionTree.parts.splice(partIndex, 1);
+		sendSubtreeUpdate();
+	}
 
 	function chooseConditionType() {
 		const typeModal: ModalSettings = {
-			title: 'Add Criterium',
-			body: 'Which type of condition do you want to add?',
+			title: 'Add Condition',
+			body: 'Which type of condition would you like to add?',
 			type: 'component',
 			component: 'addFilterCondition',
 			response(r) {
 				switch (r) {
 					case 'AND':
-						conditionTree.parts = [
-                            ...conditionTree.parts,
-                            { type: 'AND', parts: [] }
-                        ]
+						conditionTree.parts = [...conditionTree.parts, { type: 'AND', parts: [] }];
 						break;
-                    case 'OR':
-                        conditionTree.parts = [
-                            ...conditionTree.parts,
-                            { type: 'OR', parts: [] }
-                        ]
-                        break;
-                    case 'EQ':
-                        conditionTree.parts = [
-                            ...conditionTree.parts,
-                            { type: 'EQ', pointer: '', target_value: '' }
-                        ]
-                        break;
+					case 'OR':
+						conditionTree.parts = [...conditionTree.parts, { type: 'OR', parts: [] }];
+						break;
+					case 'EQ':
+						conditionTree.parts = [
+							...conditionTree.parts,
+							{ type: 'EQ', pointer: '', target_value: '' }
+						];
+						break;
 				}
-                sendSubtreeUpdate();
+
+				// Only send the update if the user actually added a condition
+				// Modal will respond with undefined if the user clicks outside of it
+				if (r) {
+					sendSubtreeUpdate();
+				}
 			}
 		};
 
@@ -75,7 +79,11 @@
 <!-- Base Case, for now only the equals check-->
 {#if conditionTree.type === 'EQ'}
 	<div class="h4 flex items-center gap-2">
-		<select class="select inline font-mono focus-within:grow" bind:value={conditionTree.pointer} on:change={sendSubtreeUpdate}>
+		<select
+			class="select inline font-mono"
+			bind:value={conditionTree.pointer}
+			on:change={sendSubtreeUpdate}
+		>
 			{#each Object.entries(fields) as [pointer, label]}
 				<option value={pointer}>{label}</option>
 			{/each}
@@ -83,16 +91,16 @@
 				<option value={conditionTree.pointer}>{conditionTree.pointer}</option>
 			{/if}
 		</select>
-		is
+		<span>is</span>
 		<input
-			class="input inline font-mono"
+			class="input rounded-md p-2 read-only:cursor-not-allowed"
 			type="text"
 			bind:value={conditionTree.target_value}
 			on:change={maybeCastToNumber}
 		/>
 	</div>
 
-<!-- Recursive Case, for the AND and OR conditions -->
+	<!-- Recursive Case, for the AND and OR conditions -->
 {:else}
 	<div
 		class="card flex flex-col space-y-2 border border-slate-500 p-4 {conditionTree.type !== 'EQ'
@@ -101,14 +109,28 @@
 	>
 		{#if conditionTree.parts}
 			{#each conditionTree.parts as conditionPart, i}
-				<svelte:self conditionTree={conditionPart} on:subtreeUpdate={(event) => handleSubtreeUpdate(event, i)} />
+				<div class="flex items-center space-x-2">
+					<div class="grow">
+						<svelte:self
+							class="grow"
+							conditionTree={conditionPart}
+							on:subtreeUpdate={(event) => handleSubtreeUpdate(event, i)}
+						/>
+					</div>
+					<button class="btn-icon hover:variant-primary group" on:click={() => removePart(i)}>
+						<Icon
+							src={Trash}
+							class="h-6 w-6 cursor-pointer transition-colors group-hover:text-red-500"
+						/>
+					</button>
+				</div>
 				<h4 class="h4 text-surface-500 self-center">
 					{conditionTree.type === 'AND' ? 'and' : 'or'}
 				</h4>
 			{/each}
 			<button class="btn variant-filled" on:click={chooseConditionType}>
 				<span> <Icon src={Plus} class="h-4 w-4" /></span>
-				<span>Add Criterium</span>
+				<span>Add Condition</span>
 			</button>
 		{/if}
 	</div>
