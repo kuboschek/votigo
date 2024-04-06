@@ -60,7 +60,11 @@ jobs:
         with:
           node-version: 'latest'
 
-      - name: Install Python
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
