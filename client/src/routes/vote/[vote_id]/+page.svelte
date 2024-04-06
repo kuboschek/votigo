@@ -21,19 +21,19 @@
 	async function handleVoteButton() {
 		try {
 			await VotesService.voteVoteVoteIdVotePost(data.vote._id, selectedOptionId);
-            const successModal: ModalSettings = {
-                type: 'alert',
-                title: 'Success',
-                body: 'Your vote has been counted!',
-                modalClasses: '!bg-success-500 !text-white',
-                buttonTextCancel: 'Close',
+			const successModal: ModalSettings = {
+				type: 'alert',
+				title: 'Success',
+				body: 'Your vote has been counted!',
+				modalClasses: '!bg-success-500 !text-white',
+				buttonTextCancel: 'Close',
 
-                response(r) {
-                    goto('/');
-                }
-            };
+				response() {
+					goto('/');
+				}
+			};
 
-            modalStore.trigger(successModal);
+			modalStore.trigger(successModal);
 		} catch (error) {
 			const apiError = error as ApiError;
 
@@ -53,23 +53,21 @@
 	<title>{data.vote.title || 'Votigo'}</title>
 </svelte:head>
 
-<div class="container mx-auto p-4 flex justify-between">
+<div class="container mx-auto flex justify-between p-4">
 	<section>
 		<h2 class="h2">{data.vote.title}</h2>
 		<p class="text-gray-500">{data.vote.prompt}</p>
 	</section>
-    {#if !canBeVotedOn}
-    <section>
-        <div class="card p-4 bg-warning-500 border border-warning-400 shadow flex gap-2">
-            <span>
-                <Icon src={ExclamationTriangle} class="h-6 w-6" />
-            </span>
-            <span>
-                This vote is not open yet.
-            </span>
-        </div>
-    </section>
-    {/if}
+	{#if !canBeVotedOn}
+		<section>
+			<div class="card flex gap-2 border border-warning-400 bg-warning-500 p-4 shadow">
+				<span>
+					<Icon src={ExclamationTriangle} class="h-6 w-6" />
+				</span>
+				<span> This vote is not open yet. </span>
+			</div>
+		</section>
+	{/if}
 </div>
 
 <div class="container mx-auto grid grid-cols-1 gap-2 p-4 sm:grid-cols-2 md:grid-cols-3">
@@ -87,7 +85,7 @@
 <div class="container mx-auto flex justify-end p-4">
 	<button
 		disabled={!selectedOptionId || !canBeVotedOn}
-		class="button btn variant-filled"
+		class="button variant-filled btn"
 		on:click={handleVoteButton}
 	>
 		<span>Confirm</span>

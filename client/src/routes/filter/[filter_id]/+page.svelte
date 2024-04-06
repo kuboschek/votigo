@@ -1,12 +1,20 @@
 <script lang="ts">
-	import { FiltersService, type UpdateFilter } from '$lib';
+	import {
+		FiltersService,
+		type AndCondition_Input,
+		type UpdateFilter,
+		type OrCondition_Input,
+		type EqCondition
+	} from '$lib';
 	import Condition from '$lib/filter/condition.svelte';
 	import type { PageData } from './$types';
 	export let data: PageData;
 
-	async function updateFilterCondition(event: CustomEvent<{ subtree: any }>) {
+	async function updateFilterCondition(
+		event: CustomEvent<{ subtree: AndCondition_Input | OrCondition_Input | EqCondition }>
+	) {
 		data.condition.tree = event.detail.subtree;
-		await updateFilter()
+		await updateFilter();
 	}
 
 	async function updateFilter() {
@@ -52,7 +60,7 @@
 	<section class="space-y-2">
 		<h3 class="h3">Criteria</h3>
 		<div class="mx-auto">
-			<Condition conditionTree={data.condition.tree} on:subtreeUpdate={updateFilterCondition}/>
+			<Condition conditionTree={data.condition.tree} on:subtreeUpdate={updateFilterCondition} />
 		</div>
 	</section>
 </div>

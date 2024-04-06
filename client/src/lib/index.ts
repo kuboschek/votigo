@@ -6,8 +6,8 @@ import { OpenAPI } from './client';
 OpenAPI.BASE = env.PUBLIC_API_BASE_URL;
 
 if (dev) {
-    OpenAPI.USERNAME = 'fake';
-    OpenAPI.PASSWORD = 'fake';
+	OpenAPI.USERNAME = 'fake';
+	OpenAPI.PASSWORD = 'fake';
 }
 
 export * from './client';

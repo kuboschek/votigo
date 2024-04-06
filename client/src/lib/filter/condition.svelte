@@ -7,12 +7,6 @@
 
 	export let conditionTree: AndCondition_Input | OrCondition_Input | EqCondition;
 
-	$: targetValue =
-		typeof conditionTree.target_value === 'number'
-			? conditionTree.target_value
-			: `"${conditionTree.target_value}"`;
-	$: resolvedPointer = fields[conditionTree.pointer] || conditionTree.pointer;
-
 	const modal = getModalStore();
 	const dispatch = createEventDispatcher();
 
@@ -31,7 +25,12 @@
 		dispatch('subtreeUpdate', { subtree: conditionTree });
 	}
 
-	function handleSubtreeUpdate(event: CustomEvent<{ subtree: any }>, partIndex: number) {
+	function handleSubtreeUpdate(
+		event: CustomEvent<{ subtree: AndCondition_Input | OrCondition_Input | EqCondition }>,
+		partIndex: number
+	) {
+		if (!conditionTree.parts) return;
+
 		conditionTree.parts[partIndex] = event.detail.subtree;
 
 		sendSubtreeUpdate();
@@ -117,18 +116,18 @@
 							on:subtreeUpdate={(event) => handleSubtreeUpdate(event, i)}
 						/>
 					</div>
-					<button class="btn-icon hover:variant-primary group" on:click={() => removePart(i)}>
+					<button class="hover:variant-primary group btn-icon" on:click={() => removePart(i)}>
 						<Icon
 							src={Trash}
 							class="h-6 w-6 cursor-pointer transition-colors group-hover:text-red-500"
 						/>
 					</button>
 				</div>
-				<h4 class="h4 text-surface-500 self-center">
+				<h4 class="h4 self-center text-surface-500">
 					{conditionTree.type === 'AND' ? 'and' : 'or'}
 				</h4>
 			{/each}
-			<button class="btn variant-filled" on:click={chooseConditionType}>
+			<button class="variant-filled btn" on:click={chooseConditionType}>
 				<span> <Icon src={Plus} class="h-4 w-4" /></span>
 				<span>Add Condition</span>
 			</button>
