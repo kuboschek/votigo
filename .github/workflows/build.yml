@@ -96,7 +96,7 @@ jobs:
 
       - name: Run codegen
         run: |
-          ./codegen.sh
+          poetry run ./codegen.sh
 
       - name: Frontend tests
         uses: borales/actions-yarn@v5
