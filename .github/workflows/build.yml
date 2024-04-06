@@ -94,6 +94,10 @@ jobs:
           pip install poetry
           poetry install
 
+      - name: Run codegen
+        run: |
+          ./codegen.sh
+
       - name: Frontend tests
         uses: borales/actions-yarn@v5
         with:
@@ -103,10 +107,6 @@ jobs:
       - name: Backend tests
         run: |
           poetry run pytest
-
-          - name: Run codegen
-          run: |
-            ./codegen.sh
   
       - name: Build API image
         uses: docker/build-push-action@v5
