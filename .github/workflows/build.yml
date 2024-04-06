@@ -76,10 +76,16 @@ jobs:
           cmd: install
           dir: 'client'
 
-      - name: Install Playwright dependencies
+      - name: Install Playwright browsers
         uses: borales/actions-yarn@v5
         with:
           cmd: playwright install
+          dir: 'client'
+      
+      - name: Install Playwright dependencies
+        uses: borales/actions-yarn@v5
+        with:
+          cmd: playwright install-deps
           dir: 'client'
 
       - name: Install Python dependencies
