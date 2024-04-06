@@ -4,7 +4,6 @@
 	import { getModalStore, type ModalSettings } from '@skeletonlabs/skeleton';
 	import { ArrowRight, ExclamationTriangle, Icon } from 'svelte-hero-icons';
 	import type { PageData } from '../$types';
-	import { Warning } from 'postcss';
 	import { goto } from '$app/navigation';
 
 	export let data: PageData;
