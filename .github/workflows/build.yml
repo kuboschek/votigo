@@ -1,0 +1,113 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Generate tags for API images
+        id: tags_api
+        uses: docker/metadata-action@v5
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            kuboschek/votigo-api
+            ghcr.io/kuboschek/votigo-api            
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+      - name: Generate tags for UI images
+        id: tags_ui
+        uses: docker/metadata-action@v5
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            kuboschek/votigo-ui
+            ghcr.io/kuboschek/votigo-ui            
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha  
+
+      - name: Install Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'latest'
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          cache: 'poetry'
+
+      - name: Install yarn dependencies
+        uses: borales/actions-yarn@v5
+        with:
+          cmd: install
+          dir: 'client'
+
+      - name: Install Playwright dependencies
+        uses: borales/actions-yarn@v5
+        with:
+          cmd: playwright install
+          dir: 'client'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
+
+      - name: Frontend tests
+        uses: borales/actions-yarn@v5
+        with:
+          cmd: test
+          dir: 'client'
+
+      - name: Backend tests
+        run: |
+          poetry run pytest
+
+          - name: Run codegen
+          run: |
+            ./codegen.sh
+  
+      - name: Build API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.tags_api.outputs.tags }}
+
+      - name: Build UI image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./client
+          push: true
+          tags: ${{ steps.tags_ui.outputs.tags }}

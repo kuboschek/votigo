@@ -30,3 +30,23 @@ Event-sourced.
 Vote -> base data of votes
 Options -> data of options that can be picked in votes
 Filters -> object trees that determine who can and can't vote
+
+## Build And Deploy Steps
+### Build
+
+#### Install deps
+* python
+* yarn
+
+#### Run tests
+* python unittests
+* sveltekit tests
+
+#### Run OpenAPI codegen
+* ./codegen.sh
+
+#### Run UI build
+* cd client && docker build
+
+#### Run app build
+* docker build
