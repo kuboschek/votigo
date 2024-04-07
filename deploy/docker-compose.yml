@@ -1,0 +1,88 @@
+services:
+  api:
+    image: ghcr.io/kuboschek/votigo-api:main
+    depends_on:
+      - db
+
+    environment:
+      - DATABASE_URL=postgresql://votigo:votigo@db:5432/votigo
+      - FAKE_AUTH=true
+      - JWKS_URL=https://www.googleapis.com/oauth2/v3/certs
+      - CORS_ORIGINS=http://votigo-ui.localhost:3000
+
+    networks:
+      - votigo-proxy
+      - votigo-db
+
+    restart: unless-stopped
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.votigo-api.rule=Host(`votigo-api.localhost`)"
+      - "traefik.http.routers.votigo-api.entrypoints=web"
+      - "traefik.docker.network=deploy_votigo-proxy"
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: votigo
+      POSTGRES_PASSWORD: votigo
+      POSTGRES_DB: votigo
+
+    volumes:
+      - votigo-db:/var/lib/postgresql/data
+
+    tmpfs:
+      # For read-only filesystem, need to create a volume/tmpfs for PostgreSQL to run its much
+      # needed configuration. The read-only flag does not make volumes and tmpfs read-only.
+      - /tmp
+      - /run
+      - /run/postgresql
+
+    networks:
+      - votigo-db
+
+    restart: unless-stopped
+
+  ui:
+    image: ghcr.io/kuboschek/votigo-ui:main
+    depends_on:
+      - api
+
+    environment:
+      - PUBLIC_API_BASE_URL=http://votigo-api.localhost
+
+    networks:
+      - votigo-proxy
+
+    restart: unless-stopped
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.votigo-ui.rule=Host(`votigo-ui.localhost`)"
+      - "traefik.http.routers.votigo-ui.entrypoints=web"
+
+  proxy:
+    image: traefik:latest
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--providers.docker.exposedbydefault=false"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    networks:
+      - votigo-proxy
+
+    restart: unless-stopped
+
+volumes:
+  votigo-db:
+
+networks:
+  votigo-proxy:
+  votigo-db:
