@@ -126,6 +126,7 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.tags_api.outputs.tags }}
+          platforms: linux/amd64,linux/arm64
 
       - name: Build UI image
         uses: docker/build-push-action@v5
@@ -133,3 +134,4 @@ jobs:
           context: ./client
           push: true
           tags: ${{ steps.tags_ui.outputs.tags }}
+          platforms: linux/amd64,linux/arm64
