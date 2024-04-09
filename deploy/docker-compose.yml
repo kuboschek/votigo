@@ -4,11 +4,16 @@ services:
     depends_on:
       - db
 
+    env_file:
+      - path: ./.env
+        required: true
+
     environment:
       - DATABASE_URL=postgresql://votigo:votigo@db:5432/votigo
-      - FAKE_AUTH=true
-      - JWKS_URL=https://www.googleapis.com/oauth2/v3/certs
-      - CORS_ORIGINS=http://votigo-ui.localhost:3000
+      - FAKE_AUTH=false
+      - JWKS_URL=${OIDC_AUTHORITY}/.well-known/jwks.json
+      - JWT_AUDIENCES=${JWT_AUDIENCES}
+      - CORS_ORIGINS=${UI_BASE_URL}
 
     networks:
       - votigo-proxy
@@ -49,8 +54,16 @@ services:
     depends_on:
       - api
 
+    env_file:
+      - path: ./.env
+        required: true
+
     environment:
-      - PUBLIC_API_BASE_URL=http://votigo-api.localhost
+      - PUBLIC_BASE_URL=${UI_BASE_URL}
+      - PUBLIC_API_BASE_URL=${API_BASE_URL}
+      - PUBLIC_OIDC_AUTHORITY=${OIDC_AUTHORITY}
+      - PUBLIC_OIDC_CLIENT_ID=${OIDC_CLIENT_ID}
+      - PUBLIC_OIDC_SCOPES=${OIDC_SCOPES}
 
     networks:
       - votigo-proxy

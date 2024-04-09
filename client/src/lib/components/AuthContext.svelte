@@ -13,7 +13,7 @@
 	const userManager = new UserManager({
 		authority: env.PUBLIC_OIDC_AUTHORITY,
 		client_id: env.PUBLIC_OIDC_CLIENT_ID,
-		redirect_uri: env.PUBLIC_URL_BASE + '/auth/callback',
+		redirect_uri: env.PUBLIC_BASE_URL + '/auth/callback',
 		scope: env.PUBLIC_OIDC_SCOPES
 	});
 
