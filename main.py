@@ -42,12 +42,11 @@ else:
 # The main event-sourced application
 votigo = Votigo()
 
+
 @app.exception_handler(AggregateNotFound)
 def not_found_exception_handler(request, exc):
-    return JSONResponse(
-        status_code=404,
-        content={"message": str(exc)}
-    )
+    return JSONResponse(status_code=404, content={"message": str(exc)})
+
 
 @app.post("/vote", tags=["votes"], response_model=ReadFullVote)
 def create_vote(user: User):
@@ -62,26 +61,31 @@ def read_vote(vote_id: UUID):
 
     return ReadFullVote(vote=vote, options=options)
 
+
 @app.post("/vote/{vote_id}/lock", tags=["votes"])
 def lock_vote(vote_id: UUID, user: User):
     return votigo.lock_vote(vote_id)
+
 
 @app.post("/vote/{vote_id}/open", tags=["votes"])
 def open_vote(vote_id: UUID, user: User):
     return votigo.start_vote(vote_id)
 
+
 @app.post("/vote/{vote_id}/close", tags=["votes"])
 def close_vote(vote_id: UUID, user: User):
     return votigo.stop_vote(vote_id)
+
 
 @app.post("/vote/{vote_id}", tags=["votes"])
 def update_vote(vote_id: UUID, values: UpdateVote):
     return votigo.update_vote(vote_id, values)
 
+
 @app.post("/vote/{vote_id}/vote", tags=["votes"])
 def vote(vote_id: UUID, user: User, option_id: UUID):
     """
-        Register a vote for a user on a vote.
+    Register a vote for a user on a vote.
     """
     try:
         return votigo.vote(vote_id, user.id, option_id)
@@ -108,9 +112,11 @@ def remove_option(vote_id: UUID, option_id: UUID):
 def create_filter(user: User):
     return votigo.create_filter(user.sub)
 
+
 @app.get("/filter/{filter_id}", tags=["filters"], response_model=Filter)
 def read_filter(filter_id: UUID):
     return votigo.get_filter(filter_id)
+
 
 @app.post("/filter/{filter_id}", tags=["filters"])
 def update_filter(filter_id: UUID, values: UpdateFilter):

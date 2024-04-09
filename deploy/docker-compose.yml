@@ -20,7 +20,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.votigo-api.rule=Host(`votigo-api.localhost`)"
       - "traefik.http.routers.votigo-api.entrypoints=web"
-      - "traefik.docker.network=deploy_votigo-proxy"
+      - "traefik.docker.network=deploy_votigo-proxy" # TODO Find a way to safely remove this line
 
   db:
     image: postgres:16

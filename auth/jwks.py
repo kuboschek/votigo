@@ -5,13 +5,18 @@ import jwt
 import requests_cache
 
 JWKS_URI = os.getenv("JWKS_URL", "")
+JWT_AUDIENCES = os.getenv("JWT_AUDIENCES", "").split(",") or None
 ALGORITHMS = ["RS256"]
 
-session = requests_cache.CachedSession('jwks-cache', backend='memory',cache_control=True)
+session = requests_cache.CachedSession(
+    "jwks-cache", backend="memory", cache_control=True
+)
+
 
 def get_jwks(url: str):
     jwks_response = session.get(url)
     return jwks_response.json()
+
 
 def get_validated_payload(token: str) -> Any:
     """
@@ -45,7 +50,9 @@ def get_validated_payload(token: str) -> Any:
                 break
         if public_key is None:
             raise HTTPException(status_code=401, detail="Invalid token")
-        return jwt.decode(token, public_key, algorithms=[header["alg"]])
+        return jwt.decode(
+            token, public_key, algorithms=[header["alg"]], audience=JWT_AUDIENCES
+        )
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
     except jwt.InvalidTokenError:

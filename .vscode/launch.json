@@ -7,15 +7,15 @@
             "request": "launch",
             "module": "uvicorn",
             "env": {
-                "JWKS_URL": "https://www.googleapis.com/oauth2/v3/certs",
-                "FAKE_AUTH": "true",
+                "JWKS_URL": "https://phog-dev.eu.auth0.com/.well-known/jwks.json",
+                "JWT_AUDIENCES": "2LCiIJq9bLifB1tfJ3WAuWUnQtjgwktf",
+                "FAKE_AUTH": "false",
                 "CORS_ORIGINS": "*"
             },
             "args": [
                 "main:app",
                 "--reload"
-            ],
-            "justMyCode": true
+            ]
         },
         {
             "type": "node-terminal",
