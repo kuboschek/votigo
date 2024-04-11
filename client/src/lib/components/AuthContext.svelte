@@ -2,13 +2,13 @@
 	import { dev } from '$app/environment';
 	import { env } from '$env/dynamic/public';
 	import { OpenAPI } from '$lib';
-	import { getModalStore } from '@skeletonlabs/skeleton';
-	import { UserManager } from 'oidc-client-ts';
+	import { User, UserManager } from 'oidc-client-ts';
 	import { onMount, setContext } from 'svelte';
 	import { writable } from 'svelte/store';
 
 	const userName = writable<string>('');
 	const signedIn = writable(false);
+	const initialized = writable(false);
 
 	const userManager = new UserManager({
 		authority: env.PUBLIC_OIDC_AUTHORITY,
@@ -17,17 +17,32 @@
 		scope: env.PUBLIC_OIDC_SCOPES
 	});
 
+	async function propagateLogIn(user: User) {
+		signedIn.set(true);
+		userName.set(user.profile.name ?? user.profile.sub);
+		OpenAPI.TOKEN = user.id_token;
+
+		if (dev) {
+			OpenAPI.USERNAME = undefined;
+			OpenAPI.PASSWORD = undefined;
+		}
+	}
+
+	async function propagateLogOut() {
+		signedIn.set(false);
+		userName.set('');
+		OpenAPI.TOKEN = undefined;
+
+		if (dev) {
+			OpenAPI.USERNAME = 'fake';
+			OpenAPI.PASSWORD = 'fake';
+		}
+	}
+
 	async function signIn() {
 		try {
 			const user = await userManager.signinPopup();
-			signedIn.set(true);
-			userName.set(user.profile.name ?? user.profile.sub);
-			OpenAPI.TOKEN = user.id_token;
-
-			if (dev) {
-				OpenAPI.USERNAME = undefined;
-				OpenAPI.PASSWORD = undefined;
-			}
+			propagateLogIn(user);
 
 			return user;
 		} catch (error) {
@@ -38,31 +53,35 @@
 
 	async function signOut() {
 		try {
-			userManager.signoutSilent();
-			signedIn.set(false);
-			userName.set('');
-			OpenAPI.TOKEN = undefined;
-
-			if (dev) {
-				OpenAPI.USERNAME = 'fake';
-				OpenAPI.PASSWORD = 'fake';
-			}
+			await userManager.removeUser();
+			await propagateLogOut();
 		} catch (error) {
 			console.error(error);
 			throw error;
 		}
 	}
 
-	export { signedIn, userName, signIn, signOut };
+	export { signIn, signOut, signedIn, userName };
 </script>
 
 <script lang="ts">
+	async function loadInitialUser() {
+		const user = await userManager.getUser();
+		if (user) {
+			propagateLogIn(user);
+		}
+	}
+
 	async function handleOnMount() {
 		const params = new URLSearchParams(window.location.search);
 		if (params.has('code') && params.has('state')) {
 			await userManager.signinCallback();
 		}
+
+		await loadInitialUser();
+		initialized.set(true);
 	}
+
 	onMount(handleOnMount);
 
 	setContext('auth', userManager);
