@@ -4,9 +4,11 @@
 
 	export let iconSrc: IconSource;
 	export let hoverColorClass: string = '';
+
+	$: iconClass = `group-hover:${hoverColorClass} h-6 w-6` ?? 'h-6 w-6';
 </script>
 
 <button on:click type="button" class="group">
 	<span><slot /></span>
-	<span><Icon src={iconSrc} class={'group-hover:' + hoverColorClass + ' h-6 w-6'} /></span>
+	<span><Icon src={iconSrc} class={iconClass} /></span>
 </button>

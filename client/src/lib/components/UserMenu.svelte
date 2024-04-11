@@ -5,7 +5,8 @@
 		Bars3,
 		Cog,
 		Icon,
-		Plus
+		Plus,
+		XMark
 	} from 'svelte-hero-icons';
 
 	import { goto } from '$app/navigation';
@@ -46,10 +47,17 @@
 
 <div class="relative">
 	{#if $signedIn}
-		<button class="btn" on:click={toggleMenu}>
-			<span>{$userName}</span>
-			<span><Icon src={Bars3} class="h-6 w-6" /></span>
-		</button>
+		{#if menuOpen}
+			<button class="btn" on:click={toggleMenu}>
+				<span>Close Menu</span>
+				<span><Icon src={XMark} class="h-6 w-6" /></span>
+			</button>
+		{:else}
+			<button class="btn" on:click={toggleMenu}>
+				<span>{$userName}</span>
+				<span><Icon src={Bars3} class="h-6 w-6" /></span>
+			</button>
+		{/if}
 	{:else}
 		<button class="btn" on:click={signIn}>
 			<span>Log In</span>
@@ -58,7 +66,7 @@
 	{/if}
 	{#if menuOpen}
 		<div
-			class="btn-group-vertical variant-filled absolute right-0 top-full z-10 flex items-end rounded-md p-2"
+			class="btn-group-vertical variant-filled absolute right-0 top-full z-10 flex items-end rounded-md py-2"
 			on:click={toggleMenu}
 			on:keypress={checkMenuKey}
 			role="menu"
