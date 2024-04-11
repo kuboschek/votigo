@@ -11,6 +11,7 @@
 	import { goto } from '$app/navigation';
 	import { FiltersService, VotesService } from '$lib';
 	import { signIn, signOut, signedIn, userName } from '$lib/components/AuthContext.svelte';
+	import UserMenuButton from './UserMenuButton.svelte';
 
 	let menuOpen = false;
 
@@ -63,27 +64,22 @@
 			role="menu"
 			tabindex="0"
 		>
-			<button on:click={createVote} type="button" class="group">
-				<span>Create Vote</span>
-				<span><Icon src={Plus} class="group-hover:text-success-500 h-6 w-6" /></span>
-			</button>
-			<button on:click={createFilter} type="button" class="group">
-				<span>Create Filter</span>
-				<span><Icon src={Plus} class="group-hover:text-success-500 h-6 w-6" /></span>
-			</button>
-			<button on:click={toggleMenu} type="button" class="group">
-				<span>Settings</span>
-				<span><Icon src={Cog} class="group-hover:text-primary-500 h-6 w-6" /></span>
-			</button>
-			<button on:click={signOut} on:click={toggleMenu} type="button" class="group">
-				<span>Log Out</span>
-				<span
-					><Icon
-						src={ArrowRightStartOnRectangle}
-						class="group-hover:text-error-500 h-6 w-6"
-					/></span
-				>
-			</button>
+			<UserMenuButton iconSrc={Plus} hoverColorClass="text-success-500" on:click={createVote}>
+				Create Vote
+			</UserMenuButton>
+			<UserMenuButton iconSrc={Plus} hoverColorClass="text-success-500" on:click={createFilter}>
+				Create Filter
+			</UserMenuButton>
+			<UserMenuButton iconSrc={Cog} hoverColorClass="text-primary-500" on:click={toggleMenu}>
+				Settings
+			</UserMenuButton>
+			<UserMenuButton
+				iconSrc={ArrowRightStartOnRectangle}
+				hoverColorClass="text-error-500"
+				on:click={signOut}
+			>
+				Log Out
+			</UserMenuButton>
 		</div>
 	{/if}
 </div>
