@@ -1,5 +1,6 @@
 services:
   api:
+    # build: ../
     image: ghcr.io/kuboschek/votigo-api:main
     depends_on:
       - db
@@ -50,6 +51,7 @@ services:
     restart: unless-stopped
 
   ui:
+    # build: ../client
     image: ghcr.io/kuboschek/votigo-ui:main
     depends_on:
       - api
