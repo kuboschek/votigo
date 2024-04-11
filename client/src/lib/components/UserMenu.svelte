@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { Icon, UserCircle } from 'svelte-hero-icons';
 
 	import { signIn, signOut, signedIn, userName } from '$lib/components/AuthContext.svelte';
