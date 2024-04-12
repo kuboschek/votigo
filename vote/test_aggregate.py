@@ -1,8 +1,11 @@
 import unittest
-from uuid import UUID
-from eventsourcing.domain import Aggregate
-from vote.aggregate import Vote, InvalidStateTransition
 import uuid
+from uuid import UUID
+
+from eventsourcing.domain import Aggregate
+
+from vote.aggregate import InvalidStateTransition, Vote, VoteIndex, VoteStatus
+
 
 class TestVoteAggregate(unittest.TestCase):
     def setUp(self):
@@ -31,7 +34,7 @@ class TestVoteAggregate(unittest.TestCase):
         self.assertTrue(self.vote.editable)
 
         self.vote.lock_settings()
-        
+
         # But not after locking the settings
         self.assertFalse(self.vote.editable)
 
@@ -47,10 +50,9 @@ class TestVoteAggregate(unittest.TestCase):
         self.vote.start()
         self.assertTrue(self.vote.started)
 
-
     def test_close_vote(self):
         # Can't close a vote that's not open
-        with self.assertRaises(InvalidStateTransition):    
+        with self.assertRaises(InvalidStateTransition):
             self.vote.stop()
 
         self.assertFalse(self.vote.started)
@@ -73,6 +75,29 @@ class TestVoteAggregate(unittest.TestCase):
         self.assertTrue(self.vote.can_be_voted_on)
         self.vote.stop()
         self.assertFalse(self.vote.can_be_voted_on)
+
+
+class TestVoteIndexAggregate(unittest.TestCase):
+    def setUp(self):
+        self.vote_index = VoteIndex()
+
+    def test_update_title_happy(self):
+        vote_id = uuid.uuid4()
+        vote_title = "Vote Title"
+        self.vote_index.update_vote_title(id=vote_id, title=vote_title)
+        self.assertEqual(self.vote_index.titles_by_id[vote_id], vote_title)
+
+    def test_update_status_happy(self):
+        vote_id = uuid.uuid4()
+        self.vote_index.update_vote_status(id=vote_id, status=VoteStatus.OPEN)
+        self.assertIn(vote_id, self.vote_index.by_status[VoteStatus.OPEN])
+
+    def test_update_status_happy_2(self):
+        vote_id = uuid.uuid4()
+        self.vote_index.update_vote_status(id=vote_id, status=VoteStatus.OPEN)
+        self.vote_index.update_vote_status(id=vote_id, status=VoteStatus.CLOSED)
+
+        self.assertIn(vote_id, self.vote_index.by_status[VoteStatus.CLOSED])
 
 
 if __name__ == "__main__":

@@ -1,10 +1,8 @@
-
-
 import unittest
 import uuid
 
 from votigo.application import Votigo
-from votigo.data_models import UpdateOption
+from votigo.data_models import UpdateFilter, UpdateOption
 
 
 class TestVotigoApplication(unittest.TestCase):
@@ -18,13 +16,19 @@ class TestVotigoApplication(unittest.TestCase):
         vote = self.app.create_vote(self.user1)
         self.assertEqual(vote.creator_id, self.user1)
 
+    def test_create_filter(self):
+        filter = self.app.create_filter("creator")
+        self.assertEqual(filter.creator_id, "creator")
+
     def test_get_vote(self):
         vote = self.app.create_vote(self.user1)
         self.assertEqual(self.app.get_vote(vote.id), vote)
 
     def test_get_option(self):
         vote = self.app.create_vote(self.user1)
-        option = self.app.add_option(vote.id, UpdateOption(title="Option 1", ordering=1))
+        option = self.app.add_option(
+            vote.id, UpdateOption(title="Option 1", ordering=1)
+        )
         self.assertEqual(self.app.get_option(option.id), option)
 
     def test_start_vote(self):
@@ -36,9 +40,15 @@ class TestVotigoApplication(unittest.TestCase):
     def test_full_vote_cycle(self):
         # Set up
         vote = self.app.create_vote(self.user1)
-        option1 = self.app.add_option(vote.id, UpdateOption(title="Option 1", ordering=1))
-        option2 = self.app.add_option(vote.id, UpdateOption(title="Option 2", ordering=2))
-        option3 = self.app.add_option(vote.id, UpdateOption(title="Option 3", ordering=3))
+        option1 = self.app.add_option(
+            vote.id, UpdateOption(title="Option 1", ordering=1)
+        )
+        option2 = self.app.add_option(
+            vote.id, UpdateOption(title="Option 2", ordering=2)
+        )
+        option3 = self.app.add_option(
+            vote.id, UpdateOption(title="Option 3", ordering=3)
+        )
 
         vote = self.app.get_vote(vote.id)
 
@@ -52,7 +62,6 @@ class TestVotigoApplication(unittest.TestCase):
         option1 = self.app.get_option(option1.id)
         option2 = self.app.get_option(option2.id)
         option3 = self.app.get_option(option3.id)
-        
 
         # Check that the vote and its options are locked
         self.assertFalse(self.app.get_vote(vote.id).editable)
@@ -91,10 +100,27 @@ class TestVotigoApplication(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.app.vote(vote.id, self.user3, option3.id)
 
-
         self.assertTrue(self.app.get_vote(vote.id).stopped)
 
     def test_add_option(self):
         vote = self.app.create_vote(self.user1)
-        option = self.app.add_option(vote.id, UpdateOption(title="New Option", ordering=1))
+        option = self.app.add_option(
+            vote.id, UpdateOption(title="New Option", ordering=1)
+        )
         self.assertIn(option.id, self.app.get_vote(vote.id).option_ids)
+
+    def test_filter_in_index(self):
+        filter = self.app.create_filter("creator")
+        filter_title = "Test Filter"
+
+        self.app.update_filter(
+            filter_id=filter._id,
+            data=UpdateFilter(
+                title=filter_title, condition={"tree": {"type": "AND", "parts": []}}
+            ),
+        )
+        self.assertEqual(self.app.get_all_filters()[filter._id], filter_title)
+
+    def test_vote_in_index(self):
+        vote = self.app.create_vote(self.user1)
+        self.assertIn(vote.id, self.app.get_all_votes())

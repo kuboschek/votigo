@@ -5,11 +5,12 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from auth.middleware import CurrentUser, FakeUser, User as UserModel
+from auth.middleware import CurrentUser, FakeUser
+from auth.middleware import User as UserModel
 from filter.aggregate import Filter
 from option.aggregate import Option
 from vote.aggregate import Vote
-from votigo.application import Votigo, AggregateNotFound
+from votigo.application import AggregateNotFound, Votigo
 from votigo.data_models import ReadFullVote, UpdateFilter, UpdateOption, UpdateVote
 
 tags_metadata = [
@@ -52,6 +53,12 @@ def not_found_exception_handler(request, exc):
 def create_vote(user: User):
     new_vote = votigo.create_vote(user.id)
     return ReadFullVote(vote=new_vote, options=[])
+
+
+@app.get("/vote", tags=["votes"], response_model=list[Vote])
+def list_votes(user: User):
+    votes = votigo.get_all_votes()
+    return [votigo.get_vote(id) for id, _ in votes.items()]
 
 
 @app.get("/vote/{vote_id}", tags=["votes"], response_model=ReadFullVote)
