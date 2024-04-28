@@ -94,8 +94,8 @@ class Vote(Aggregate):
     def set_prompt(self, new_prompt: str):
         self.prompt = new_prompt
 
-    @event("ChooseFilter")
-    def choose_filter(self, filter_id: UUID, filter_version: int):
+    @event("SetFilter")
+    def set_filter(self, filter_id: UUID, filter_version: int):
         self.filter_id = filter_id
         self.filter_version = filter_version
 

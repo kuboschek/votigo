@@ -1,5 +1,3 @@
-
-
 import datetime
 from dataclasses import field
 from typing import Optional
@@ -16,13 +14,22 @@ class ReadFullVote(BaseModel):
     vote: Vote
     options: list[Option]
 
+
 class UpdateOption(BaseModel):
     title: str
     ordering: int
 
+
 class UpdateVote(BaseModel):
     title: str
     prompt: str
+    filter: Optional["UpdateVoteFilter"]
+
+
+class UpdateVoteFilter(BaseModel):
+    id: UUID
+    version: int
+
 
 class UpdateFilter(BaseModel):
     title: str

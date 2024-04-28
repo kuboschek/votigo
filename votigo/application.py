@@ -5,6 +5,7 @@ from eventsourcing.application import AggregateNotFound, Application
 from eventsourcing.persistence import Transcoder
 
 from filter.aggregate import Filter, FilterIndex
+from filter.data_models import BasicDict
 from filter.transcoding import ConditionTranscoding
 from option.aggregate import Option
 from vote.aggregate import Vote, VoteIndex, VoteStatus
@@ -47,6 +48,12 @@ class Votigo(Application):
         if values.prompt != vote.prompt:
             vote.set_prompt(values.prompt)
 
+        if values.filter and (
+            values.filter.id != vote.filter_id
+            or values.filter.version != vote.filter_version
+        ):
+            vote.set_filter(values.filter.id, values.filter.version)
+
         self.save(vote)
 
     def lock_vote(self, vote_id: UUID):
@@ -83,10 +90,23 @@ class Votigo(Application):
 
         self.save(vote)
 
-    def vote(self, vote_id: UUID, user_id: str, option_id: UUID):
+    def vote(
+        self,
+        vote_id: UUID,
+        user_id: str,
+        option_id: UUID,
+        user_details: BasicDict = dict(),
+    ):
         """Count a vote for the authenticated user."""
         vote: Vote = self.repository.get(vote_id)
         option: Option = self.repository.get(option_id)
+
+        if not vote.filter_id or not vote.filter_version:
+            raise ValueError("This vote is in an invalid state.")
+
+        filter: Filter = self.repository.get(
+            vote.filter_id, version=vote.filter_version
+        )
 
         if not vote.can_be_voted_on:
             raise ValueError("This vote is not ready to vote on.")
@@ -96,6 +116,9 @@ class Votigo(Application):
 
         if option_id not in vote.option_ids:
             raise ValueError("The selected option is not in this vote")
+
+        if not filter.evaluate(user_details):
+            raise ValueError("You are not allowed to vote on this vote")
 
         vote.add_voter(user_id)
         option.count_vote()

@@ -1,8 +1,9 @@
 import unittest
 import uuid
 
+from filter.data_models import Condition
 from votigo.application import Votigo
-from votigo.data_models import UpdateFilter, UpdateOption
+from votigo.data_models import UpdateFilter, UpdateOption, UpdateVote, UpdateVoteFilter
 
 
 class TestVotigoApplication(unittest.TestCase):
@@ -37,9 +38,77 @@ class TestVotigoApplication(unittest.TestCase):
         self.app.start_vote(vote.id)
         self.assertTrue(self.app.get_vote(vote.id).started)
 
+    def test_filter_access(self):
+        filter = self.app.create_filter("creator")
+        self.app.update_filter(
+            filter_id=filter._id,
+            data=UpdateFilter(
+                title="Test Filter",
+                condition=Condition(
+                    tree={
+                        "type": "AND",
+                        "parts": [
+                            {
+                                "type": "EQ",
+                                "pointer": "/username",
+                                "target_value": "valid-username",
+                            }
+                        ],
+                    }
+                ),
+            ),
+        )
+        filter = self.app.get_filter(filter._id)
+
+        vote = self.app.create_vote(self.user1)
+        self.app.update_vote(
+            vote.id,
+            UpdateVote(
+                title="Test Vote",
+                prompt="Test Prompt",
+                filter=UpdateVoteFilter(id=filter.id, version=filter.version),
+            ),
+        )
+        option = self.app.add_option(
+            vote.id, UpdateOption(title="Option 1", ordering=1)
+        )
+        self.app.lock_vote(vote.id)
+        self.app.start_vote(vote.id)
+
+        # Can't vote with invalid username
+        with self.assertRaises(ValueError):
+            self.app.vote(
+                vote.id, self.user2, option.id, {"username": "invalid-username"}
+            )
+
+        # Can vote with valid username
+        self.app.vote(vote.id, self.user2, option.id, {"username": "valid-username"})
+
     def test_full_vote_cycle(self):
         # Set up
+        filter = self.app.create_filter("creator")
+
+        # The empty AND allows any voter
+        filter.change_condition(
+            Condition(
+                tree={
+                    "type": "AND",
+                    "parts": [],
+                }
+            )
+        )
+        self.app.save(filter)
+
         vote = self.app.create_vote(self.user1)
+        self.app.update_vote(
+            vote.id,
+            UpdateVote(
+                title="Test Vote",
+                prompt="Test Prompt",
+                filter=UpdateVoteFilter(id=filter.id, version=filter.version),
+            ),
+        )
+
         option1 = self.app.add_option(
             vote.id, UpdateOption(title="Option 1", ordering=1)
         )
