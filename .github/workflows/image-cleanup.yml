@@ -11,9 +11,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
@@ -24,7 +21,7 @@ jobs:
       - name: List untagged images
         id: list-images
         run: |
-          docker images --filter "dangling=true" --format "{{.ID}}" > images.txt
+          curl -X GET -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://ghcr.io/v2/${{ github.repository }}/manifests?tags=untagged" | jq -r '.manifests[].digest' > images.txt
 
       - name: Remove untagged images from GHCR
         run: |
