@@ -18,14 +18,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: List untagged images
-        id: list-images
+      - name: List untagged API images
+        id: list-api-images
         run: |
-          curl -X GET -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://ghcr.io/v2/${{ github.repository }}/manifests?tags=untagged" | jq -r '.manifests[].digest' > images.txt
+          curl -X GET -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://ghcr.io/v2/${{ github.repository }}-api/manifests?tags=untagged" | jq -r '.manifests[].digest' > api-images.txt
 
-      - name: Remove untagged images from GHCR
+      - name: List untagged UI images
+        id: list-ui-images
         run: |
-          cat images.txt | xargs -I {} curl -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://ghcr.io/v2/${{ github.repository }}/manifests/{}"
+          curl -X GET -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://ghcr.io/v2/${{ github.repository }}-ui/manifests?tags=untagged" | jq -r '.manifests[].digest' > ui-images.txt
 
-      - name: Cleanup images file
-        run: rm images.txt
+      - name: Remove untagged API images from GHCR
+        run: |
+          cat api-images.txt | xargs -I {} curl -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://ghcr.io/v2/${{ github.repository }}-api/manifests/{}"
+
+      - name: Remove untagged UI images from GHCR
+        run: |
+          cat ui-images.txt | xargs -I {} curl -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://ghcr.io/v2/${{ github.repository }}-ui/manifests/{}"
+
+      - name: Cleanup images files
+        run: rm api-images.txt ui-images.txt
