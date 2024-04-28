@@ -8,9 +8,19 @@ updates:
   - package-ecosystem: "pip" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+
+    groups:
+      pip:
+        patterns:
+          - "*"
 
   - package-ecosystem: "npm"
     directory: "/client"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+
+    groups:
+      npm:
+        patterns:
+          - "*"
