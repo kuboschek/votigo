@@ -21,10 +21,10 @@
 		"@sveltejs/adapter-node": "^5.0.1",
 		"@sveltejs/kit": "^2.5.7",
 		"@sveltejs/vite-plugin-svelte": "^3.1.0",
-		"@types/eslint": "^8.56.0",
+		"@types/eslint": "^8.56.10",
 		"@types/node": "^20.12.7",
-		"@typescript-eslint/eslint-plugin": "^7.7.1",
-		"@typescript-eslint/parser": "^7.7.1",
+		"@typescript-eslint/eslint-plugin": "^7.8.0",
+		"@typescript-eslint/parser": "^7.8.0",
 		"autoprefixer": "^10.4.16",
 		"eslint": "^9.1.1",
 		"eslint-config-prettier": "^9.1.0",
@@ -42,7 +42,7 @@
 		"tslib": "^2.4.1",
 		"typescript": "^5.4.5",
 		"vite": "^5.2.10",
-		"vitest": "^1.5.2"
+		"vitest": "^1.5.3"
 	},
 	"type": "module",
 	"dependencies": {
