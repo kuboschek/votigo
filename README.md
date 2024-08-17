@@ -1,6 +1,11 @@
 # votigo
 Learning practical event sourcing with a sample project.
 
+## Getting Started
+* Copy `client/.env.example` to `client/.env`
+* Adjust the auth settings within to your needs
+* Update the environment for the server in `.vscode/launch.json` to adjust auth settings
+
 ## Folders
 
 ### client
