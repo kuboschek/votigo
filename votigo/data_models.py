@@ -23,7 +23,7 @@ class UpdateOption(BaseModel):
 class UpdateVote(BaseModel):
     title: str
     prompt: str
-    filter: Optional["UpdateVoteFilter"]
+    filter: Optional["UpdateVoteFilter"] = None
 
 
 class UpdateVoteFilter(BaseModel):
