@@ -7,22 +7,22 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-fastapi = "^0.112.2"
+fastapi = "^0.115.0"
 eventsourcing = {extras = ["crypto"], version = "^9.3.2"}
-uvicorn = "^0.30.6"
+uvicorn = "^0.31.0"
 requests = "^2.32.3"
 pyjwt = "^2.9.0"
 requests-cache = "^1.2.1"
-pydantic = "^2.8.2"
+pydantic = "^2.9.2"
 fastapi-third-party-auth = "^0.1.2"
 jsonpointer = "^3.0"
 
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.3.2"
-types-requests = "^2.32.0.20240712"
+pytest = "^8.3.3"
+types-requests = "^2.32.0.20240914"
 pyyaml = "^6.0.2"
-types-pyyaml = "^6.0.12.20240808"
+types-pyyaml = "^6.0.12.20240917"
 
 [build-system]
 requires = ["poetry-core"]
